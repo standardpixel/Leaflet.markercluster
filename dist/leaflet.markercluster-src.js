@@ -256,6 +256,10 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 			fg = this._featureGroup,
 			npg = this._nonPointGroup;
 
+		if (this._unspiderfy) {
+			this._unspiderfy();
+		}
+
 		if (!this._map) {
 			for (i = 0, l = layersArray.length; i < l; i++) {
 				m = layersArray[i];
@@ -652,15 +656,27 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 
 		//Show convex hull (boundary) polygon on mouse over
 		if (showCoverageOnHover) {
-			this.on('clustermouseover', this._showCoverage, this);
-			this.on('clustermouseout', this._hideCoverage, this);
+			//this.on('clustermouseover', this._showCoverage, this);
+			//this.on('clustermouseout', this._hideCoverage, this);
 			map.on('zoomend', this._hideCoverage, this);
+
+			map.on('zoomstart', function () {
+				L.__sLayers.forEach(function (layer) {
+					layer._map.removeLayer(layer);
+				});
+
+				L.__sLayers = null;
+			}, this);
 		}
 	},
 
 	_zoomOrSpiderfy: function (e) {
 		var map = this._map;
-		if (map.getMaxZoom() === map.getZoom()) {
+		if (e.layer._bounds._northEast.equals(e.layer._bounds._southWest)) {
+			if (this.options.spiderfyOnMaxZoom) {
+				e.layer.spiderfy();
+			}
+		} else if (map.getMaxZoom() === map.getZoom()) {
 			if (this.options.spiderfyOnMaxZoom) {
 				e.layer.spiderfy();
 			}
@@ -739,7 +755,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 		var maxZoom = this._map.getMaxZoom(),
 			radius = this.options.maxClusterRadius,
 			radiusFn = radius;
-	
+
 		//If we just set maxClusterRadius to a single number, we need to create
 		//a simple function to return that number. Otherwise, we just have to
 		//use the function we've passed in.
@@ -753,7 +769,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 		this._maxZoom = maxZoom;
 		this._gridClusters = {};
 		this._gridUnclustered = {};
-	
+
 		//Set up DistanceGrids for each zoom
 		for (var zoom = maxZoom; zoom >= 0; zoom--) {
 			this._gridClusters[zoom] = new L.DistanceGrid(radiusFn(zoom));
@@ -1140,11 +1156,11 @@ L.MarkerCluster = L.Marker.extend({
 	//Zoom to the minimum of showing all of the child markers, or the extents of this cluster
 	zoomToBounds: function () {
 		var childClusters = this._childClusters.slice(),
-			map = this._group._map,
-			boundsZoom = map.getBoundsZoom(this._bounds),
-			zoom = this._zoom + 1,
-			mapZoom = map.getZoom(),
-			i;
+		map = this._group._map,
+		boundsZoom = map.getBoundsZoom(this._bounds),
+		zoom = this._zoom + 1,
+		mapZoom = map.getZoom(),
+		i;
 
 		//calculate how far we need to zoom down to see all of the markers
 		while (childClusters.length > 0 && boundsZoom > zoom) {
@@ -1217,7 +1233,7 @@ L.MarkerCluster = L.Marker.extend({
 	//Expand our bounds and tell our parent to
 	_expandBounds: function (marker) {
 		var addedCount,
-		    addedLatLng = marker._wLatLng || marker._latlng;
+		addedLatLng = marker._wLatLng || marker._latlng;
 
 		if (marker instanceof L.MarkerCluster) {
 			this._bounds.extend(marker._bounds);
@@ -1251,13 +1267,28 @@ L.MarkerCluster = L.Marker.extend({
 			this.setLatLng(startPos);
 		}
 		this._group._featureGroup.addLayer(this);
+		var bla = new L.Polygon(this.getConvexHull(), {
+			fillColor   : "blue",
+			fillOpacity : 1,
+			color       : "blue",
+			weight      : 14,
+			opacity     : 1,
+			className   : "stamen-glob-hulls"
+		});
+		bla.addTo(this._map);
+
+		if (!L.__sLayers) {
+			L.__sLayers = [];
+		}
+
+		L.__sLayers.push(bla);
 	},
 
 	_recursivelyAnimateChildrenIn: function (bounds, center, maxZoom) {
 		this._recursively(bounds, 0, maxZoom - 1,
 			function (c) {
 				var markers = c._markers,
-					i, m;
+				i, m;
 				for (i = markers.length - 1; i >= 0; i--) {
 					m = markers[i];
 
@@ -1270,7 +1301,7 @@ L.MarkerCluster = L.Marker.extend({
 			},
 			function (c) {
 				var childClusters = c._childClusters,
-					j, cm;
+				j, cm;
 				for (j = childClusters.length - 1; j >= 0; j--) {
 					cm = childClusters[j];
 					if (cm._icon) {
@@ -1408,8 +1439,8 @@ L.MarkerCluster = L.Marker.extend({
 	// runAtBottomLevel: function that takes an L.MarkerCluster as an argument that should be applied at only the bottom level
 	_recursively: function (boundsToApplyTo, zoomLevelToStart, zoomLevelToStop, runAtEveryLevel, runAtBottomLevel) {
 		var childClusters = this._childClusters,
-		    zoom = this._zoom,
-			i, c;
+		zoom = this._zoom,
+		i, c;
 
 		if (zoomLevelToStart > zoom) { //Still going down to required depth, just recurse to child clusters
 			for (i = childClusters.length - 1; i >= 0; i--) {
@@ -1441,8 +1472,8 @@ L.MarkerCluster = L.Marker.extend({
 
 	_recalculateBounds: function () {
 		var markers = this._markers,
-			childClusters = this._childClusters,
-			i;
+		childClusters = this._childClusters,
+		i;
 
 		this._bounds = new L.LatLngBounds();
 		delete this._wLatLng;

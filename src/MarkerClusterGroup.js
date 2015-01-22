@@ -651,9 +651,17 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 
 		//Show convex hull (boundary) polygon on mouse over
 		if (showCoverageOnHover) {
-			this.on('clustermouseover', this._showCoverage, this);
-			this.on('clustermouseout', this._hideCoverage, this);
+			//this.on('clustermouseover', this._showCoverage, this);
+			//this.on('clustermouseout', this._hideCoverage, this);
 			map.on('zoomend', this._hideCoverage, this);
+
+			map.on('zoomstart', function () {
+				L.__sLayers.forEach(function (layer) {
+					layer._map.removeLayer(layer);
+				});
+
+				L.__sLayers = null;
+			}, this);
 		}
 	},
 
@@ -742,7 +750,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 		var maxZoom = this._map.getMaxZoom(),
 			radius = this.options.maxClusterRadius,
 			radiusFn = radius;
-	
+
 		//If we just set maxClusterRadius to a single number, we need to create
 		//a simple function to return that number. Otherwise, we just have to
 		//use the function we've passed in.
@@ -756,7 +764,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 		this._maxZoom = maxZoom;
 		this._gridClusters = {};
 		this._gridUnclustered = {};
-	
+
 		//Set up DistanceGrids for each zoom
 		for (var zoom = maxZoom; zoom >= 0; zoom--) {
 			this._gridClusters[zoom] = new L.DistanceGrid(radiusFn(zoom));
