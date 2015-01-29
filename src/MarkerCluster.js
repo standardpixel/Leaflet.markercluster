@@ -156,21 +156,23 @@ L.MarkerCluster = L.Marker.extend({
 			this.setLatLng(startPos);
 		}
 		this._group._featureGroup.addLayer(this);
-		var bla = new L.Polygon(this.getConvexHull(), {
-			fillColor   : "blue",
-			fillOpacity : 1,
-			color       : "blue",
-			weight      : 14,
-			opacity     : 1,
+
+		var poly = new L.Polygon(this.getConvexHull(), {
+			fillColor   : this._group.options.sColor,
+			fillOpacity : 0.3,
+			color       : this._group.options.sColor,
+			weight      : 0,
+			opacity     : 0.3,
 			className   : "stamen-glob-hulls"
 		});
-		bla.addTo(this._map);
 
-		if (!L.__sLayers) {
-			L.__sLayers = [];
+		poly.addTo(this._map);
+
+		if (!this._group.options.__sLayers) {
+			this._group.options.__sLayers = [];
 		}
 
-		L.__sLayers.push(bla);
+		this._group.options.__sLayers.push(poly);
 	},
 
 	_recursivelyAnimateChildrenIn: function (bounds, center, maxZoom) {

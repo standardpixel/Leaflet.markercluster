@@ -656,11 +656,11 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 			map.on('zoomend', this._hideCoverage, this);
 
 			map.on('zoomstart', function () {
-				L.__sLayers.forEach(function (layer) {
+				this.options.__sLayers.forEach(function (layer) {
 					layer._map.removeLayer(layer);
 				});
 
-				L.__sLayers = null;
+				this.options.__sLayers = null;
 			}, this);
 		}
 	},
@@ -733,6 +733,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 	},
 
 	_moveEnd: function () {
+		/*
 		if (this._inZoomAnimation) {
 			return;
 		}
@@ -744,6 +745,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 
 		this._currentShownBounds = newBounds;
 		return;
+		*/
 	},
 
 	_generateInitialClusters: function () {
