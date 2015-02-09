@@ -657,15 +657,16 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 
 			map.on('zoomstart', function () {
 
-				if (this.options.__sLayers) {
+				var layers  = this.getLayers();
 
-					this.options.__sLayers.forEach(function (layer) {
-						layer._map.removeLayer(layer);
-					});
+				layers.forEach(function (layer) {
 
-					this.options.__sLayers = null;
+					if (layer._path) {
+						map.removeLayer(layer);
+					}
 
-				}
+				});
+
 
 			}, this);
 		}

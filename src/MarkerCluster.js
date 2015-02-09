@@ -166,13 +166,7 @@ L.MarkerCluster = L.Marker.extend({
 			className   : "stamen-glob-hulls"
 		});
 
-		poly.addTo(this._map);
-
-		if (!this._group.options.__sLayers) {
-			this._group.options.__sLayers = [];
-		}
-
-		this._group.options.__sLayers.push(poly);
+		poly.addTo(this._group);
 	},
 
 	_recursivelyAnimateChildrenIn: function (bounds, center, maxZoom) {

@@ -662,15 +662,18 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 
 			map.on('zoomstart', function () {
 
-				if (this.options.__sLayers) {
+				console.log("zoom", this.getLayers());
 
-					this.options.__sLayers.forEach(function (layer) {
-						layer._map.removeLayer(layer);
-					});
+				var layers  = this.getLayers();
 
-					this.options.__sLayers = null;
+				layers.forEach(function (layer) {
 
-				}
+					if (layer._path) {
+						map.removeLayer(layer);
+					}
+
+				});
+
 
 			}, this);
 		}
@@ -1285,13 +1288,7 @@ L.MarkerCluster = L.Marker.extend({
 			className   : "stamen-glob-hulls"
 		});
 
-		poly.addTo(this._map);
-
-		if (!this._group.options.__sLayers) {
-			this._group.options.__sLayers = [];
-		}
-
-		this._group.options.__sLayers.push(poly);
+		poly.addTo(this._group);
 	},
 
 	_recursivelyAnimateChildrenIn: function (bounds, center, maxZoom) {
