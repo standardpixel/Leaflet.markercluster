@@ -157,14 +157,7 @@ L.MarkerCluster = L.Marker.extend({
 		}
 		this._group._featureGroup.addLayer(this);
 
-		var poly = new L.Polygon(this.getConvexHull(), {
-			fillColor   : this._group.options.sColor,
-			fillOpacity : 0.3,
-			color       : this._group.options.sColor,
-			weight      : 0,
-			opacity     : 0.3,
-			className   : "stamen-glob-hulls"
-		});
+		var poly = new L.Polygon(this.getConvexHull(), this._group.options.polygonOptions);
 
 		poly.addTo(this._group);
 	},

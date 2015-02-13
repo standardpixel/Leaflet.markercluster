@@ -631,7 +631,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 	_defaultIconCreateFunction: function (cluster) {
 		var childCount = cluster.getChildCount();
 
-		var c = ' marker-cluster-';
+		var c = ' marker-stamen-cluster-';
 		if (childCount < 10) {
 			c += 'small';
 		} else if (childCount < 100) {
@@ -640,7 +640,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 			c += 'large';
 		}
 
-		return new L.DivIcon({ html: '<div><span>' + childCount + '</span></div>', className: 'marker-cluster' + c, iconSize: new L.Point(40, 40) });
+		return new L.DivIcon({ html: '<div class="innerMarker" style="background-color:' + cluster._group.options.polygonOptions.color + ';color:white;opacity:0.5;text-shadow:1px 1px 1px rgba(0,0,0,1);border:none;"><span>' + childCount + '</span></div>', className: 'marker-cluster' + c, iconSize: new L.Point(40, 40) });
 	},
 
 	_bindEvents: function () {
@@ -661,8 +661,6 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 			map.on('zoomend', this._hideCoverage, this);
 
 			map.on('zoomstart', function () {
-
-				console.log("zoom", this.getLayers());
 
 				var layers  = this.getLayers();
 
@@ -1279,14 +1277,7 @@ L.MarkerCluster = L.Marker.extend({
 		}
 		this._group._featureGroup.addLayer(this);
 
-		var poly = new L.Polygon(this.getConvexHull(), {
-			fillColor   : this._group.options.sColor,
-			fillOpacity : 0.3,
-			color       : this._group.options.sColor,
-			weight      : 0,
-			opacity     : 0.3,
-			className   : "stamen-glob-hulls"
-		});
+		var poly = new L.Polygon(this.getConvexHull(), this._group.options.polygonOptions);
 
 		poly.addTo(this._group);
 	},
